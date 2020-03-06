@@ -1,0 +1,9 @@
+[package]
+
+name = "deploy-env"
+version = "0.9.0"
+authors = [ "Denis Papin <doka@doka.live>" ]
+edition = "2018"
+
+[dependencies]
+walkdir = "2.2.7"
