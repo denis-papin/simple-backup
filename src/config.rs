@@ -9,7 +9,7 @@ extern crate serde_yaml;
 //extern crate unindent;
 
 use serde::{Deserialize, Serialize};
-use serde_yaml::{Mapping};
+use serde_yaml::{Mapping, Value};
 use std::{fs};
 use std::fmt::Debug;
 use std::path::Path;
@@ -25,11 +25,14 @@ pub struct Config {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Source {
     pub paths: Vec<Mapping>,
+    pub exclude: Vec<Value::String>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Target {
     pub path: String,
+    #[serde(rename = "purge-after")]
+    pub purge_after : u32,
 }
 
 impl Config {

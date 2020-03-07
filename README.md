@@ -1,8 +1,21 @@
-# normalized-ut-env
+# simple-backup
 
-**Unit Test Normalization**
+** Copy files from one place to another as a backup **
 
-*  "deploy-ut-env"  program that will duplicate the "env" folder of a Unit 
-Test project to the standardized place.
+```
 
-*  The description of the UT normalization is also in this project.
+source:
+  paths:
+    - super projet 1: C:/Users/denis/wks-tools/simple-backup/env/data/folder-1
+    - super projet 2: C:/Users/denis/wks-tools/simple-backup/env/data/folder-2
+  exclude:
+    - *.mkv
+    - *.jar
+
+target:
+  path: E:/tmp
+  purge-after: 180
+    
+
+```
+

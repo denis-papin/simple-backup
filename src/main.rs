@@ -113,7 +113,7 @@ fn main() {
     use crate::config::*;
 
     // TODO : Read the DOKA_UT_ENV  variable to find the test files.
-    let config_file  = "C:/Users/denis/wks-tools/simple-backup/env/config/conf.yml";
+    let config_file  = "/Users/denis/prj/simple-backup/env/config/conf-mac.yml";
 
     let config = Config::new(&config_file);
     let target_dir = config.get_target_path();

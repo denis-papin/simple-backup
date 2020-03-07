@@ -87,6 +87,8 @@ fn test_config_read() {
     #[derive(Serialize, Deserialize, PartialEq, Debug)]
     pub struct Target {
         pub path: String,
+        #[serde(rename = "purge-after")]
+        pub purge_after: u32,
     }
 
     // TODO : Read the DOKA_UT_ENV  variable to find the test files.
