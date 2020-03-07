@@ -34,6 +34,14 @@ fn create_folder_structure(source_path: &str, target_path : &str, project_name :
     let src_path : &Path = Path::new(source_path);
     let trg_path : PathBuf = Path::new(target_path).join(project_name).join(package_name);
 
+    let result = fs::create_dir_all(&trg_path);
+    match  result  {
+        Ok(_v) => println!("Created directory : [{}]", trg_path.to_str().unwrap()) ,
+        Err(_e) => println!("Impossible to create the folder: [{}]", trg_path.to_str().unwrap()),
+    }
+
+    dbg!(&trg_path);
+
     // Determine the depth of the <source_path> folder, including "root".
     let depth = src_path.components().count();
 
@@ -43,16 +51,15 @@ fn create_folder_structure(source_path: &str, target_path : &str, project_name :
         .filter_map(Result::ok)
         .filter(|e| e.file_type().is_dir()) {
 
-        let entry2 : walkdir::DirEntry = entry;
-        let new_sub_path = extract_sub_path(entry2.path(), depth);
+        let new_sub_path = extract_sub_path(&entry.path(), depth);
 
         if ! new_sub_path.to_str().unwrap().is_empty() {
             let final_path = trg_path.join(new_sub_path);
-            let new_path_name = final_path.to_str().unwrap();
+            //let new_path_name = final_path.to_str().unwrap();
             let result = fs::create_dir_all(&final_path);
             match  result  {
-                Ok(_v) => println!("Created directory : [{}]", new_path_name) ,
-                Err(_e) => println!("Impossible to create the folder"),
+                Ok(_v) => println!("Created directory : [{}]", final_path.to_str().unwrap()) ,
+                Err(_e) => println!("Impossible to create the folder: [{}]", final_path.to_str().unwrap()),
             }
         }
     }
@@ -110,45 +117,27 @@ fn main() {
 
     let config = Config::new(&config_file);
     let target_dir = config.get_target_path();
+    let projects = config.get_source_path();
 
     println!( ">>>>>>>>>>>> {:?}", &config);
 
     // TODO find a way to create path without system "/"
-    let source_dir = "C:/Users/denis/wks-tools/simple-backup/env/data";
-    //let source_dir = "C:/Users/denis/wks-steeple";
-    //let target_dir = "E:/tmp";
+    //let source_dir = "C:/Users/denis/wks-tools/simple-backup/env/data";
 
     let now: DateTime<Local> = Local::now();
     let package = now.format("%Y.%m.%d %H.%M.%S %a").to_string();
 
-    // copy the folder structure
-    create_folder_structure(&source_dir,  &target_dir,  "PRJ1" , &package );
+    for p in projects {
+        let project_name = p.0;
+        let source_dir = p.1;
 
-    copy_files(&source_dir, &target_dir, "PRJ1", &package );
+        //let source_dir = "C:/Users/denis/wks-steeple";
+        //let target_dir = "E:/tmp";
 
+        // copy the folder structure
+        create_folder_structure(&source_dir, &target_dir, project_name, &package);
+
+        copy_files(&source_dir, &target_dir, project_name, &package);
+    }
 }
 
-
-#[cfg(test)]
-mod serde_tests {
-
-
-//    #[test]
-//    fn test_basic() {
-//        assert!(1 == 1);
-//    }
-//
-//    #[test]
-//    #[should_panic]
-//    fn test_panic() {
-//        assert!(1 == 1);
-//        panic!("oh no!");
-//    }
-//
-//
-//    #[test]
-//    fn test_fail() {
-//        assert_eq!(1, 1+1);
-//    }
-
-}

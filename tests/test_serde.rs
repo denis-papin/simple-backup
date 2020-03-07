@@ -3,6 +3,9 @@ feature = "cargo-clippy",
 allow(unreadable_literal, decimal_literal_representation)
 )]
 
+#[cfg(test)]
+
+
 use serde::{Deserialize, Serialize};
 use serde_yaml::{Value, Mapping};
 use std::{fs};
