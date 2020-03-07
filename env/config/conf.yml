@@ -1,0 +1,8 @@
+source:
+  paths:
+    - projet 1: c:/toto/tutu
+    - projet 2: c:/toto le hero/tutu
+    - projet 3: hug
+
+target:
+  path: E:/tmp

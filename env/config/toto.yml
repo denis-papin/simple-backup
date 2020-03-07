@@ -1,0 +1,7 @@
+source :
+  paths :
+    - project1 : C:/Users/denis/wks-tools/simple-backup/env/data/prj
+    - project2 : C:/Users/denis/wks-tools/simple-backup/env/data/extra
+
+target :
+  path : E:/tmp
