@@ -9,7 +9,7 @@ extern crate serde_yaml;
 //extern crate unindent;
 
 use serde::{Deserialize, Serialize};
-use serde_yaml::{Mapping, Value};
+use serde_yaml::{Mapping};
 use std::{fs};
 use std::fmt::Debug;
 use std::path::Path;
@@ -25,7 +25,7 @@ pub struct Config {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Source {
     pub paths: Vec<Mapping>,
-    pub exclude: Vec<Value::String>,
+    pub exclude: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]

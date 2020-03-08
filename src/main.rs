@@ -7,8 +7,9 @@ use std::path::Path;
 use std::path::PathBuf;
 use walkdir::WalkDir;
 use std::path::Components;
-//use std::env;
+use std::env;
 use chrono::{DateTime, Local};
+use std::process::exit;
 
 /**
     Removes the first <depth> folders from the <one_path> path.
@@ -100,29 +101,63 @@ fn copy_files(source_path: &str, target_path : &str, project_name : &str, packag
 
 mod config;
 
+
+/**
+cargo run -- -c "C:\Users\denis\wks-tools\simple-backup\env\config\conf.yml"
+*/
 fn main() {
-/*  let mut env: &String = &String::from("");
-    let mut project_code: &String = &String::from("");
-    let mut doka_test: &String = &String::from("");
+
+    let mut config_file  = &String::new();
+    let new_config_file;
 
     // Read the parameters
-    let args: Vec<String> = env::args().collect();*/
+    let args: Vec<String> = env::args().collect();
+
+    dbg!(&args);
+
+    if args.len() < 2 {
+        println!("{}", show_help());
+        exit(45);
+    } else {
+
+        //for i in 1..=2 {
+            let i = 1;
+            let option_index = i * 2 - 1;
+            let value_index = i * 2;
+
+            let option : &String = &args[option_index];
+
+            dbg!(&option);
+
+            match option.as_ref() {
+                "-c" => config_file = &args[value_index],
+                _ => println!("Wrong argument"),
+            }
+
+            dbg!(&config_file);
+
+        //}
+
+        // For now, we consider that the Windows style separator is replaced.
+        new_config_file = config_file.replace("\\", "/");
+
+        dbg!(&new_config_file);
+
+        if new_config_file.is_empty() {
+            println!("-c <config_file> is required");
+            exit(30);
+        }
+    }
 
     //use std::path::Components;
 
     use crate::config::*;
 
-    // TODO : Read the DOKA_UT_ENV  variable to find the test files.
-    let config_file  = "/Users/denis/prj/simple-backup/env/config/conf-mac.yml";
-
-    let config = Config::new(&config_file);
+    let config = Config::new(&new_config_file);
     let target_dir = config.get_target_path();
     let projects = config.get_source_path();
 
-    println!( ">>>>>>>>>>>> {:?}", &config);
-
-    // TODO find a way to create path without system "/"
-    //let source_dir = "C:/Users/denis/wks-tools/simple-backup/env/data";
+    //println!( ">>>>>>>>>>>> {:?}", &config);
 
     let now: DateTime<Local> = Local::now();
     let package = now.format("%Y.%m.%d %H.%M.%S %a").to_string();
@@ -131,13 +166,28 @@ fn main() {
         let project_name = p.0;
         let source_dir = p.1;
 
-        //let source_dir = "C:/Users/denis/wks-steeple";
-        //let target_dir = "E:/tmp";
-
-        // copy the folder structure
+        // Copy the folder structure
         create_folder_structure(&source_dir, &target_dir, project_name, &package);
 
         copy_files(&source_dir, &target_dir, project_name, &package);
     }
 }
 
+/**
+    Return the help text.
+*/
+fn show_help() -> &'static str {
+
+        "
+    deploy-env -e <env>  -p <project-code> -u <doka-env>
+
+        -e  <env>               Folder of the UT env templates, Ex : \"/home/doka-file-tests/env\"
+        -p  <project-code>      Project code, Ex : \"file-api-tests\"
+        -u  <doka-env>       Doka UT Environment root folder, Ex :  \"E:/doka-tests/\"
+
+    deploy-env -h
+
+        -h  Show this help file.
+"
+
+}
