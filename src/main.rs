@@ -180,13 +180,11 @@ fn main() {
 fn show_help() -> &'static str {
 
         "
-    deploy-env -e <env>  -p <project-code> -u <doka-env>
+    simple-backup -c <yaml-config-file>
 
-        -e  <env>               Folder of the UT env templates, Ex : \"/home/doka-file-tests/env\"
-        -p  <project-code>      Project code, Ex : \"file-api-tests\"
-        -u  <doka-env>       Doka UT Environment root folder, Ex :  \"E:/doka-tests/\"
+        -c <yaml-config-file>   Yaml file to configure the current backup options Ex : \"/home/doka-file-tests/env\"
 
-    deploy-env -h
+    simple-backup -h
 
         -h  Show this help file.
 "
