@@ -107,8 +107,8 @@ cargo run -- -c "C:\Users\denis\wks-tools\simple-backup\env\config\conf.yml"
 */
 fn main() {
 
-    let mut config_file  = &String::new();
-    let new_config_file;
+    //let mut cf = String::default();
+    let mut config_file = String::default();
 
     // Read the parameters
     let args: Vec<String> = env::args().collect();
@@ -130,7 +130,7 @@ fn main() {
             dbg!(&option);
 
             match option.as_ref() {
-                "-c" => config_file = &args[value_index],
+                "-c" => config_file = String::from(&args[value_index] ),
                 _ => println!("Wrong argument"),
             }
 
@@ -139,11 +139,12 @@ fn main() {
         //}
 
         // For now, we consider that the Windows style separator is replaced.
-        new_config_file = config_file.replace("\\", "/");
+        config_file = config_file.replace("\\", "/");
+        // new_config_file = config_file.replace("\\", "/");
 
-        dbg!(&new_config_file);
+        dbg!(&config_file);
 
-        if new_config_file.is_empty() {
+        if config_file.is_empty() {
             println!("-c <config_file> is required");
             exit(30);
         }
@@ -153,7 +154,7 @@ fn main() {
 
     use crate::config::*;
 
-    let config = Config::new(&new_config_file);
+    let config = Config::new(&config_file);
     let target_dir = config.get_target_path();
     let projects = config.get_source_path();
 
