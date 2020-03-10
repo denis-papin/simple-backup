@@ -33,7 +33,7 @@ fn extract_sub_path(one_path: &Path, depth: usize) -> &Path {
 */
 fn create_folder_structure(source_path: &str, target_path : &str, project_name : &str, package_name : &str ) {
     let src_path : &Path = Path::new(source_path);
-    let trg_path : PathBuf = Path::new(target_path).join(project_name).join(package_name);
+    let trg_path : PathBuf = Path::new(target_path).join(package_name).join(project_name);
 
     let result = fs::create_dir_all(&trg_path);
     match  result  {
@@ -56,8 +56,9 @@ fn create_folder_structure(source_path: &str, target_path : &str, project_name :
 
         if ! new_sub_path.to_str().unwrap().is_empty() {
             let final_path = trg_path.join(new_sub_path);
-            //let new_path_name = final_path.to_str().unwrap();
+
             let result = fs::create_dir_all(&final_path);
+
             match  result  {
                 Ok(_v) => println!("Created directory : [{}]", final_path.to_str().unwrap()) ,
                 Err(_e) => println!("Impossible to create the folder: [{}]", final_path.to_str().unwrap()),
@@ -71,11 +72,10 @@ fn create_folder_structure(source_path: &str, target_path : &str, project_name :
 /**
     Take all the files of the <source_path> directory (recurse) and duplicate them
     in the <target_path>/<package_name>/ directory.
-    If the file is xml, md, txt or properties, the ${DOKA_UT_ENV} inside the file is replaced with <target_path>.
 */
 fn copy_files(source_path: &str, target_path : &str, project_name : &str, package_name : &str ) {
     let src_path : &Path = Path::new(source_path);
-    let trg_path : PathBuf = Path::new(target_path).join(project_name).join(package_name);
+    let trg_path : PathBuf = Path::new(target_path).join(package_name).join(project_name);
 
     // Determine the depth of the <source_path> folder, including "root".
     let depth = src_path.components().count();
@@ -98,6 +98,40 @@ fn copy_files(source_path: &str, target_path : &str, project_name : &str, packag
         }
     }
 }
+
+
+// TODO loop over the folders and ZIP them one by one
+fn copy_zipped_folders(source_path: &str, target_path : &str, project_name : &str, package_name : &str )  {
+
+    let src_path : &Path = Path::new(source_path);
+    //let current_dir = env::current_dir().unwrap();
+
+    println!(
+        "Entries modified in the last 24 hours in {:?}:",
+        src_path
+    );
+
+    for entry in fs::read_dir(src_path).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+
+        let metadata = fs::metadata(&path).unwrap();
+        let last_modified = metadata.modified().unwrap().elapsed().unwrap().as_secs();
+
+        //if last_modified < 24 * 3600 && metadata.is_file() {
+            println!(
+                "Last modified: {:?} seconds, is read only: {:?}, size: {:?} bytes, filename: {:?}",
+                last_modified,
+                metadata.permissions().readonly(),
+                metadata.len(),
+                path.file_name().ok_or("No filename").unwrap()
+            );
+        //}
+    }
+
+}
+
+
 
 mod config;
 
@@ -140,7 +174,6 @@ fn main() {
 
         // For now, we consider that the Windows style separator is replaced.
         config_file = config_file.replace("\\", "/");
-        // new_config_file = config_file.replace("\\", "/");
 
         dbg!(&config_file);
 
@@ -167,10 +200,14 @@ fn main() {
         let project_name = p.0;
         let source_dir = p.1;
 
+        copy_zipped_folders(&source_dir, &target_dir, project_name, &package);
+
+        /*
         // Copy the folder structure
         create_folder_structure(&source_dir, &target_dir, project_name, &package);
 
         copy_files(&source_dir, &target_dir, project_name, &package);
+        */
     }
 }
 
@@ -180,6 +217,9 @@ fn main() {
 fn show_help() -> &'static str {
 
         "
+
+    Simple Backup v0.9.0
+
     simple-backup -c <yaml-config-file>
 
         -c <yaml-config-file>   Yaml file to configure the current backup options Ex : \"/home/doka-file-tests/env\"
