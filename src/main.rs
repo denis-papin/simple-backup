@@ -1,6 +1,6 @@
 extern crate walkdir;
 extern crate chrono;
-
+extern crate tar;
 
 use std::fs;
 use std::path::Path;
@@ -118,7 +118,17 @@ fn copy_zipped_folders(source_path: &str, target_path : &str, project_name : &st
         let metadata = fs::metadata(&path).unwrap();
         let last_modified = metadata.modified().unwrap().elapsed().unwrap().as_secs();
 
-        //if last_modified < 24 * 3600 && metadata.is_file() {
+        dbg!("-----");
+        dbg!(&path);
+        // dbg!(&metadata);
+
+        if metadata.is_dir() {
+            use std::fs;
+            use tar::Builder;
+
+            let mut ar = Builder::new(Vec::new());
+
+
             println!(
                 "Last modified: {:?} seconds, is read only: {:?}, size: {:?} bytes, filename: {:?}",
                 last_modified,
@@ -126,7 +136,21 @@ fn copy_zipped_folders(source_path: &str, target_path : &str, project_name : &st
                 metadata.len(),
                 path.file_name().ok_or("No filename").unwrap()
             );
-        //}
+            //}
+
+            dbg!("--ADD---");
+            dbg!(&path);
+
+            // Use the directory at one location, but insert it into the archive
+            // with a different name.
+            ar.append_dir_all("./toto.tar", &path).unwrap();
+
+            let ret = ar.finish();
+
+            dbg!(ret);
+
+            break;
+        }
     }
 
 }
