@@ -28,4 +28,4 @@ walkdir = "2.3.1"
 chrono = "0.4.10"
 serde = { version = "1.0.60", features = ["derive"] }
 serde_yaml = "0.8.11"
-tar = "0.4.26"
+subprocess = "0.2.4"

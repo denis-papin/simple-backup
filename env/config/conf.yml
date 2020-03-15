@@ -9,3 +9,6 @@ source:
 target:
   path: E:/tmp
   purge-after: 180
+
+tools:
+  zip: C:/Program Files/7-Zip/7z

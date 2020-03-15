@@ -20,6 +20,8 @@ use std::path::Path;
 pub struct Config {
     pub source: Source,
     pub target: Target,
+    #[serde(default)]
+    pub tools : Option<Tools>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -34,6 +36,13 @@ pub struct Target {
     #[serde(rename = "purge-after")]
     pub purge_after : u32,
 }
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+pub struct Tools {
+    #[serde(default)]
+    pub zip: String,
+}
+
 
 impl Config {
 
@@ -74,6 +83,18 @@ impl Config {
         let x = &self.target.path;
 
         x
+    }
+
+    pub fn get_zip_tool( &self ) -> &str {
+
+        match &self.tools {
+            None => {
+                println!("Missing zip tool");
+                ""
+            },
+            Some(t) => &t.zip,
+        }
+
     }
 
 }
