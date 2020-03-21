@@ -10,5 +10,7 @@ target:
   path: E:/tmp
   purge-after: 180
 
+#compressed: true
+
 tools:
   zip: C:/Program Files/7-Zip/7z

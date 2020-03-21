@@ -13,13 +13,16 @@ use serde_yaml::{Mapping};
 use std::{fs};
 use std::fmt::Debug;
 use std::path::Path;
-// use std::ops::Deref;
 
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Config {
     pub source: Source,
     pub target: Target,
+
+    #[serde(default)]
+    pub compressed : bool,
+
     #[serde(default)]
     pub tools : Option<Tools>,
 }

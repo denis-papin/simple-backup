@@ -10,5 +10,7 @@ target:
   path: /Users/denis/prj/simple-backup/env/data/out
   purge-after: 180
 
+compressed: true
+
 tools:
   zip: C:/Program Files/7-Zip/7z
