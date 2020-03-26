@@ -9,10 +9,12 @@ use std::path::Components;
 use std::env;
 use chrono::{DateTime, Local};
 use std::process::{exit};
-use std::fs::File;
+use std::fs::{remove_dir_all};
 use subprocess::Exec;
 
 use crate::config::*;
+use std::ops::Sub;
+use std::time::{Duration, SystemTime};
 
 mod config;
 
@@ -27,43 +29,42 @@ struct Processing<'a> {
 }
 
 impl Processing<'_> {
+
+    fn is_forbidden( &self, path_name : &str) -> bool {
+        let mut has_forbidden : bool = false;
+        for forbidden in &self.config.source.exclude {
+            has_forbidden = has_forbidden | path_name.contains(forbidden);
+        }
+        has_forbidden
+    }
+
     /**
         // TODO handle the case where there is only files in the source path
     */
     fn copy_zipped_folders( &self )  {
 
-        use std::fs::File;
-
         let src_path : &Path = Path::new(&self.source_path);
         let trg_path : PathBuf = Path::new(&self.target_path).join(&self.package_name).join(&self.project_name);
 
-        // let current_dir = env::current_dir().unwrap();
-
         let depth = src_path.components().count();
 
-        dbg!(src_path );
+        //dbg!(src_path );
 
         for entry in fs::read_dir(src_path).unwrap() {
             let entry = entry.unwrap();
             let path = entry.path();
 
             let metadata = fs::metadata(&path).unwrap();
-            //let last_modified = metadata.modified().unwrap().elapsed().unwrap().as_secs();
-
-            // dbg!("-----");
-            dbg!("-----", &path);
 
 
             let new_sub_path = extract_sub_path(&path, depth);
 
+            let has_forbidden : bool = self.is_forbidden(new_sub_path.to_str().unwrap());
 
-            if (! new_sub_path.to_str().unwrap().is_empty())  && (! new_sub_path.to_str().unwrap().contains("DOKA-CONFIG"))
+            if (! new_sub_path.to_str().unwrap().is_empty())  && (! has_forbidden)
             {
 
                 if metadata.is_dir() {
-                    use std::fs;
-
-                    dbg!(&path);
 
                     //  "C:/Program Files/7-Zip/7z" a -p"xxxx"
                     //         "D:/work-doc-backups/2018.04.28 13.38/Visa&Factures 2016.zip"
@@ -72,23 +73,24 @@ impl Processing<'_> {
 
                     let final_path = trg_path.join(new_sub_path);
 
-                    let exit_status = Exec::cmd(&self.config.get_zip_tool())
+                    println!("Create the Zip archive : {:?}", &final_path.to_str());
+
+                    let _exit_status = Exec::cmd(&self.config.get_zip_tool())
                         .arg("a")
                         .arg("-p".to_owned() + PASS)
                         .arg(final_path.to_str().unwrap().to_owned() + ".zip")
                         .arg(&path)
                         .join();
 
-                    dbg!(exit_status);
                 } else {
-                    println!("THIS IS A FILE {:?}", &path);
+                    println!("Add a root file to the archive : {:?}", &path.as_os_str());
 
                     if !new_sub_path.to_str().unwrap().is_empty() {
                         let final_path = trg_path.join("root_files");
 
-                        let exit_status = Exec::cmd(&self.config.get_zip_tool())
+                        let _exit_status = Exec::cmd(&self.config.get_zip_tool())
                             .arg("a")
-                            .arg("-p\"x\"")
+                            .arg("-p".to_owned() + PASS)
                             .arg(final_path.to_str().unwrap().to_owned() + ".zip")
                             .arg(&path)
                             .join();
@@ -115,8 +117,6 @@ impl Processing<'_> {
             Err(_e) => println!("Impossible to create the folder: [{}]", trg_path.to_str().unwrap()),
         }
 
-        dbg!(&trg_path);
-
         // Determine the depth of the <source_path> folder, including "root".
         let depth = src_path.components().count();
 
@@ -128,7 +128,9 @@ impl Processing<'_> {
 
             let new_sub_path = extract_sub_path(&entry.path(), depth);
 
-            if (! new_sub_path.to_str().unwrap().is_empty())  && (! new_sub_path.to_str().unwrap().contains("DOKA-CONFIG"))
+            let has_forbidden : bool = self.is_forbidden(new_sub_path.to_str().unwrap());
+
+            if (! new_sub_path.to_str().unwrap().is_empty())  && (! has_forbidden)
             {
                 let final_path = trg_path.join(new_sub_path);
 
@@ -162,8 +164,9 @@ impl Processing<'_> {
             .filter(|e| !e.file_type().is_dir()) {
 
             let new_sub_path = extract_sub_path(entry.path(), depth);
+            let has_forbidden : bool = self.is_forbidden(new_sub_path.to_str().unwrap());
 
-            if (! new_sub_path.to_str().unwrap().is_empty())  && (! new_sub_path.to_str().unwrap().contains("DOKA-CONFIG"))
+            if (! new_sub_path.to_str().unwrap().is_empty())  && (! has_forbidden)
             {
                 let final_path = trg_path.join(new_sub_path);
                 let new_path_name = final_path.to_str().unwrap();
@@ -194,6 +197,33 @@ fn extract_sub_path(one_path: &Path, depth: usize) -> &Path {
     new_sub_path
 }
 
+const SECONDS_IN_DAY : u64 = 24 * 60 * 60;
+
+/**
+Loop the target package to delete the folders older than x days
+*/
+fn purge_package(    target_path : &str,
+                     config : &Config)  {
+
+    for entry in fs::read_dir(Path::new(&target_path)).unwrap() {
+
+        let entry = entry.unwrap();
+        let path = entry.path();
+
+        let metadata = fs::metadata(&path).unwrap();
+
+        let to_be_delete = SystemTime::now().sub(Duration::from_secs((config.target.purge_after as u64) * SECONDS_IN_DAY))
+                            .ge(&metadata.created().unwrap());
+
+        if to_be_delete {
+            println!("Trying to remove {:?}", &path);
+            remove_dir_all(&path).expect("Failed to remove target");
+            println!("Done");
+        }
+    }
+
+
+}
 
 /**
 cargo run -- -c "C:\Users\denis\wks-tools\simple-backup\env\config\conf.yml"
@@ -206,33 +236,18 @@ fn main() {
     // Read the parameters
     let args: Vec<String> = env::args().collect();
 
-    // dbg!(&args);
-
     if args.len() < 2 {
         println!("{}", show_help());
         exit(45);
     } else {
 
-        //for i in 1..=2 {
-        let i = 1;
-        let option_index = i * 2 - 1;
-        let value_index = i * 2;
-
-        let option : &String = &args[option_index];
-
-        //dbg!(&option);
-
+        let option : &String = &args[1];
         match option.as_ref() {
-            "-c" => config_file = String::from(&args[value_index] ),
+            "-c" => config_file = String::from(&args[2] ),
             _ => println!("Wrong argument"),
         }
 
-        dbg!(&config_file);
-
-        //}
-
         // For now, we consider that the Windows style separator is replaced.
-        config_file = config_file.replace("\\", "/");
 
         dbg!(&config_file);
 
@@ -242,14 +257,11 @@ fn main() {
         }
     }
 
-    //use std::path::Components;
 
     // Read the configuration file.
     let config = Config::new(&config_file);
     let target_dir = config.get_target_path();
     let projects = config.get_source_path();
-
-    println!( ">>>>>>>>>>>> {:?}", &config);
 
     let now: DateTime<Local> = Local::now();
     let package = now.format("%Y.%m.%d %H.%M.%S %a").to_string();
@@ -257,6 +269,8 @@ fn main() {
     for p in projects {
         let project_name = p.0;
         let source_dir = p.1;
+
+        println!( "*** Prepare to backup project  {} : {} ***", &project_name, &source_dir);
 
         let process = Processing {
             source_path : &source_dir,
@@ -275,6 +289,10 @@ fn main() {
         }
 
     }
+
+    println!( "*** Start the purge process in  {} ***", &target_dir);
+    purge_package( &target_dir,  &config);
+
 }
 
 /**
