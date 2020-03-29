@@ -257,7 +257,6 @@ fn main() {
         }
     }
 
-
     // Read the configuration file.
     let config = Config::new(&config_file);
     let target_dir = config.get_target_path();
