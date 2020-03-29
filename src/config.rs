@@ -30,7 +30,8 @@ pub struct Config {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Source {
     pub paths: Vec<Mapping>,
-    pub exclude: Vec<String>,
+    #[serde(default)]
+    pub exclude: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]

@@ -32,10 +32,16 @@ impl Processing<'_> {
 
     fn is_forbidden( &self, path_name : &str) -> bool {
         let mut has_forbidden : bool = false;
-        for forbidden in &self.config.source.exclude {
-            has_forbidden = has_forbidden | path_name.contains(forbidden);
+
+        match  &self.config.source.exclude {
+            Some(v) => {
+                for forbidden in v {
+                    has_forbidden = has_forbidden | path_name.contains(forbidden);
+                }
+                has_forbidden
+            },
+            None => false,
         }
-        has_forbidden
     }
 
     /**
