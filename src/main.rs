@@ -183,8 +183,6 @@ impl Processing<'_> {
             }
         }
     }
-
-
 }
 
 /**
@@ -232,7 +230,7 @@ fn purge_package(    target_path : &str,
 }
 
 /**
-cargo run -- -c "C:\Users\denis\wks-tools\simple-backup\env\config\conf.yml"
+cargo run -- -c "C:\Users\denis\wks-tools\simple-backup\env\config\dummy.yml"
 */
 fn main() {
 
