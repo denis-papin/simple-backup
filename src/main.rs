@@ -81,7 +81,7 @@ impl Processing<'_> {
 
                     let _exit_status = Exec::cmd(&self.config.get_zip_tool())
                         .arg("a")
-                        .arg("-p".to_owned() + PASS.decrypt(0).as_str())
+                        .arg("-p".to_owned() + PASS.deobfuscate(0).as_str())
                         .arg(final_path.to_str().unwrap().to_owned() + ".zip")
                         .arg(&path)
                         .join();
@@ -94,7 +94,7 @@ impl Processing<'_> {
 
                         let _exit_status = Exec::cmd(&self.config.get_zip_tool())
                             .arg("a")
-                            .arg("-p".to_owned() + PASS.decrypt(0).as_str())
+                            .arg("-p".to_owned() + PASS.deobfuscate(0).as_str())
                             .arg(final_path.to_str().unwrap().to_owned() + ".zip")
                             .arg(&path)
                             .join();
@@ -186,7 +186,7 @@ impl Processing<'_> {
             };
 
             if too_big {
-                println!("************* File is too big");
+                println!("File is too big, [{:?}]",entry.path());
             }
 
             if (! new_sub_path.to_str().unwrap().is_empty())  && (! has_forbidden) && (!too_big)
@@ -322,7 +322,7 @@ fn main() {
 fn show_help() -> &'static str {
 
 "
-    Simple Backup v0.9.0
+    Simple Backup v1.0.1
 
     simple-backup -c <yaml-config-file>
 
