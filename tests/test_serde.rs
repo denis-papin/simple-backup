@@ -92,7 +92,7 @@ fn test_config_read() {
     }
 
     // TODO : Read the DOKA_UT_ENV  variable to find the test files.
-    let var = "C:/Users/denis/wks-tools/simple-backup/env/data/conf.yml";
+    let var = "C:/Users/denis/wks-tools/simple-backup/env/data/dummy.yml";
 
     let config_path: &Path = Path::new(&var);
 

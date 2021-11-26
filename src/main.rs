@@ -1,7 +1,7 @@
 extern crate walkdir;
 extern crate chrono;
 
-use std::{fs};
+use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 use walkdir::WalkDir;
@@ -18,7 +18,7 @@ use std::time::{Duration, SystemTime};
 
 mod config;
 
-const PASS : &'static str = "il faut viser la lune";
+static PASS : obfstr::ObfString<[u8; 21]> = obfstr::obfconst!( "il faut viser la lune" );
 
 struct Processing<'a> {
     source_path: &'a str,
@@ -32,6 +32,7 @@ impl Processing<'_> {
 
     fn is_forbidden( &self, path_name : &str) -> bool {
         let mut has_forbidden : bool = false;
+
         match  &self.config.source.exclude {
             Some(v) => {
                 for forbidden in v {
@@ -80,7 +81,7 @@ impl Processing<'_> {
 
                     let _exit_status = Exec::cmd(&self.config.get_zip_tool())
                         .arg("a")
-                        .arg("-p".to_owned() + PASS)
+                        .arg("-p".to_owned() + PASS.decrypt(0).as_str())
                         .arg(final_path.to_str().unwrap().to_owned() + ".zip")
                         .arg(&path)
                         .join();
@@ -93,7 +94,7 @@ impl Processing<'_> {
 
                         let _exit_status = Exec::cmd(&self.config.get_zip_tool())
                             .arg("a")
-                            .arg("-p".to_owned() + PASS)
+                            .arg("-p".to_owned() + PASS.decrypt(0).as_str())
                             .arg(final_path.to_str().unwrap().to_owned() + ".zip")
                             .arg(&path)
                             .join();
@@ -199,8 +200,6 @@ impl Processing<'_> {
             }
         }
     }
-
-
 }
 
 /**
@@ -322,8 +321,7 @@ fn main() {
 */
 fn show_help() -> &'static str {
 
-        "
-
+"
     Simple Backup v0.9.0
 
     simple-backup -c <yaml-config-file>
