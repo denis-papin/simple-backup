@@ -21,6 +21,9 @@ pub struct Config {
     pub target: Target,
 
     #[serde(default)]
+    pub max_size : Option<u64>, // size in MB
+
+    #[serde(default)]
     pub compressed : bool,
 
     #[serde(default)]

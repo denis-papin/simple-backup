@@ -1,7 +1,7 @@
 extern crate walkdir;
 extern crate chrono;
 
-use std::fs;
+use std::{fs};
 use std::path::Path;
 use std::path::PathBuf;
 use walkdir::WalkDir;
@@ -32,7 +32,6 @@ impl Processing<'_> {
 
     fn is_forbidden( &self, path_name : &str) -> bool {
         let mut has_forbidden : bool = false;
-
         match  &self.config.source.exclude {
             Some(v) => {
                 for forbidden in v {
@@ -61,8 +60,6 @@ impl Processing<'_> {
             let path = entry.path();
 
             let metadata = fs::metadata(&path).unwrap();
-
-
             let new_sub_path = extract_sub_path(&path, depth);
 
             let has_forbidden : bool = self.is_forbidden(new_sub_path.to_str().unwrap());
@@ -155,7 +152,7 @@ impl Processing<'_> {
     /**
     Take all the files of the <source_path> directory (recurse) and duplicate them
     in the <target_path>/<package_name>/ directory.
-*/
+    */
     fn copy_files( &self ) {
         let src_path : &Path = Path::new(&self.source_path);
         let trg_path : PathBuf = Path::new(&self.target_path).join(&self.package_name).join(&self.project_name);
@@ -172,7 +169,26 @@ impl Processing<'_> {
             let new_sub_path = extract_sub_path(entry.path(), depth);
             let has_forbidden : bool = self.is_forbidden(new_sub_path.to_str().unwrap());
 
-            if (! new_sub_path.to_str().unwrap().is_empty())  && (! has_forbidden)
+            let too_big = match self.config.max_size {
+                None => {false}
+                Some(limit) => {
+                    let metadata = fs::metadata(entry.path()).unwrap();
+                    match &metadata.is_dir() {
+                        true => {false}
+                        false => {
+                            let fsize = metadata.len();
+                            //println!("File {:?} has size {}", entry.path(), fsize);
+                            fsize >= limit * 1_000_000
+                        }
+                    }
+                }
+            };
+
+            if too_big {
+                println!("************* File is too big");
+            }
+
+            if (! new_sub_path.to_str().unwrap().is_empty())  && (! has_forbidden) && (!too_big)
             {
                 let final_path = trg_path.join(new_sub_path);
                 let new_path_name = final_path.to_str().unwrap();
@@ -232,11 +248,10 @@ fn purge_package(    target_path : &str,
 }
 
 /**
-cargo run -- -c "C:\Users\denis\wks-tools\simple-backup\env\config\conf.yml"
+cargo run -- -c "C:\Users\denis\wks-tools\cloud-backup\env\config\conf.yml"
 */
 fn main() {
 
-    //let mut cf = String::default();
     let mut config_file = String::default();
 
     // Read the parameters
@@ -265,6 +280,8 @@ fn main() {
 
     // Read the configuration file.
     let config = Config::new(&config_file);
+    println!("{:?}", &config);
+
     let target_dir = config.get_target_path();
     let projects = config.get_source_path();
 
@@ -286,11 +303,11 @@ fn main() {
         };
 
         if config.compressed {
-            &process.copy_zipped_folders();
+            let _ = &process.copy_zipped_folders();
         } else {
             // Copy the folder structure
-            &process.create_folder_structure();
-            &process.copy_files();
+            let _ = &process.create_folder_structure();
+            let _ = &process.copy_files();
         }
 
     }

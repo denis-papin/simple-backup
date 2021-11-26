@@ -1,7 +1,7 @@
 source :
   paths :
-    - project1 : C:/Users/denis/wks-tools/simple-backup/env/data/prj
-    - project2 : C:/Users/denis/wks-tools/simple-backup/env/data/extra
+    - project1 : C:/Users/denis/wks-tools/cloud-backup/env/data/folder-1
+    - project2 : C:/Users/denis/wks-tools/cloud-backup/env/data/folder-2
 
 target :
   path : E:/tmp
